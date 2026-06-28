@@ -22,9 +22,17 @@ type SubjectSeed = {
 const standardTheory: ComponentSeed[] = [
   ["Quizzes (4 × 10)", 40, 10],
   ["Assignments (4 × 10)", 40, 10],
-  ["CCP", 20, 10],
-  ["Midterm", 30, 25],
-  ["Final", 100, 45],
+  ["CCP", 10, 10],
+  ["Midterm", 25, 25],
+  ["Final", 45, 45],
+];
+
+const aiTheoryPolicy: ComponentSeed[] = [
+  ["Quizzes (4 × 10)", 40, 10],
+  ["Assignments (4 × 10)", 40, 10],
+  ["CCP", 10, 10],
+  ["Midterm", 25, 25],
+  ["Final", 45, 45],
 ];
 
 const labPolicy: ComponentSeed[] = [
@@ -37,9 +45,9 @@ const labPolicy: ComponentSeed[] = [
 const dsaTheory: ComponentSeed[] = [
   ["Quizzes (4 × 10)", 40, 15],
   ["Assignments (4 × 10)", 40, 5],
-  ["CCP", 20, 10],
-  ["Midterm", 30, 25],
-  ["Final", 100, 45],
+  ["CCP", 10, 10],
+  ["Midterm", 25, 25],
+  ["Final", 45, 45],
 ];
 
 const subjects: SubjectSeed[] = [
@@ -64,7 +72,7 @@ const subjects: SubjectSeed[] = [
 
   { name: "Information Security", code: "CS215", creditHours: 2, type: SubjectType.THEORY, semesterOrder: 3, policy: standardTheory },
   { name: "Information Security Lab", code: "CS215L", creditHours: 1, type: SubjectType.LAB, semesterOrder: 3, policy: labPolicy },
-  { name: "Introduction to Artificial Intelligence", code: "AI232", creditHours: 2, type: SubjectType.THEORY, semesterOrder: 3, policy: standardTheory },
+  { name: "Introduction to Artificial Intelligence", code: "AI232", creditHours: 2, type: SubjectType.THEORY, semesterOrder: 3, policy: aiTheoryPolicy },
   { name: "Introduction to Artificial Intelligence Lab", code: "AI232L", creditHours: 1, type: SubjectType.LAB, semesterOrder: 3, policy: labPolicy },
   { name: "Computer Networks", code: "CS260", creditHours: 2, type: SubjectType.THEORY, semesterOrder: 3, policy: standardTheory },
   { name: "Computer Networks Lab", code: "CS260L", creditHours: 1, type: SubjectType.LAB, semesterOrder: 3, policy: labPolicy },
