@@ -75,6 +75,7 @@ const subjects: SubjectSeed[] = [
 ];
 
 async function clearDatabase() {
+  await db.passwordResetToken.deleteMany();
   await db.gpaCourse.deleteMany();
   await db.gpaRecord.deleteMany();
   await db.studentComponentMark.deleteMany();

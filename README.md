@@ -20,6 +20,9 @@ Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui, MongoDB, Prisma ORM, Au
    DATABASE_URL="mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/smart_grade?retryWrites=true&w=majority"
    AUTH_SECRET="generate-with-openssl-rand-base64-32"
    AUTH_TRUST_HOST=true
+   APP_URL="http://localhost:3000"
+   RESEND_API_KEY="re_your_api_key"
+   RESEND_FROM_EMAIL="Smart Grade Calculator <onboarding@resend.dev>"
    ```
 
 3. Create MongoDB collections and indexes, then generate the Prisma client:
@@ -52,6 +55,16 @@ Open `http://localhost:3000`.
 5. Run `DATABASE_URL="your-atlas-url" npm run db:push` and then `DATABASE_URL="your-atlas-url" npm run db:seed` once from a trusted machine.
 
 MongoDB does not use Prisma SQL migrations. Schema synchronization is handled by `prisma db push` and indexes declared in `schema.prisma`.
+
+## Password reset email
+
+The login page links to `/forgot-password`. Reset requests store only a SHA-256 token hash, expire after 30 minutes, are single-use, and return the same response whether an account exists or not.
+
+1. Create a Resend API key and set `RESEND_API_KEY` in Vercel.
+2. Set `APP_URL` to the production URL, for example `https://your-project.vercel.app`.
+3. For initial testing, use `Smart Grade Calculator <onboarding@resend.dev>` as `RESEND_FROM_EMAIL`. Resend testing restrictions may limit recipients.
+4. For real student emails, verify your own sending domain in Resend and use an address such as `Smart Grade Calculator <support@yourdomain.com>`.
+5. After pulling this update, run `npm run db:push` once to create the password-reset collection and indexes.
 
 ## Seed credentials
 
