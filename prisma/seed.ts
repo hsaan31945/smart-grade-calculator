@@ -20,23 +20,23 @@ type SubjectSeed = {
 };
 
 const standardTheory: ComponentSeed[] = [
-  ["Quizzes", 20, 10],
-  ["Assignments", 20, 10],
+  ["Quizzes (4 × 10)", 40, 10],
+  ["Assignments (4 × 10)", 40, 10],
   ["CCP", 20, 10],
   ["Midterm", 30, 25],
   ["Final", 100, 45],
 ];
 
 const labPolicy: ComponentSeed[] = [
-  ["Labs", 100, 50],
+  ["Labs (13 × 25)", 325, 50],
   ["Midterm", 30, 15],
   ["Project", 100, 15],
   ["Final", 100, 20],
 ];
 
 const dsaTheory: ComponentSeed[] = [
-  ["Quizzes", 20, 15],
-  ["Assignments", 20, 5],
+  ["Quizzes (4 × 10)", 40, 15],
+  ["Assignments (4 × 10)", 40, 5],
   ["CCP", 20, 10],
   ["Midterm", 30, 25],
   ["Final", 100, 45],
