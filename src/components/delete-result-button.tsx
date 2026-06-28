@@ -1,0 +1,2 @@
+"use client"; import { deleteCalculation } from "@/app/actions"; import { Button } from "./ui/button"; import { Trash2 } from "lucide-react"; import { toast } from "sonner"; import { useRouter } from "next/navigation";
+export function DeleteResultButton({id}:{id:string}){const r=useRouter();return <Button variant="ghost" size="sm" onClick={async()=>{if(!confirm("Delete this saved result?"))return;await deleteCalculation(id);toast.success("Result deleted");r.refresh()}}><Trash2/>Delete</Button>}

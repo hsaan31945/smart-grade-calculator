@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum SubjectType {
+  THEORY
+  LAB
+  THEORY_AND_LAB
+}
+
+enum OfferingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VerificationStatus {
+  DRAFT
+  UNVERIFIED
+  ADMIN_VERIFIED
+  UPDATED_RECENTLY
+}
+
+model User {
+  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String               @unique
+  passwordHash      String
+  role              Role                 @default(STUDENT)
+  programId         String?              @db.ObjectId
+  semesterId        String?              @db.ObjectId
+  sectionId         String?              @db.ObjectId
+  program           Program?             @relation(fields: [programId], references: [id], onDelete: SetNull)
+  semester          Semester?            @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  section           Section?             @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  calculations      StudentCalculation[]
+  gpaRecords        GpaRecord[]
+  statisticsUpdated ClassStatistic[]     @relation("StatisticsUpdater")
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+}
+
+model Program {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  name      String            @unique
+  users     User[]
+  subjects  Subject[]
+  offerings SubjectOffering[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model Semester {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  name       String            @unique
+  order      Int
+  users      User[]
+  subjects   Subject[]
+  offerings  SubjectOffering[]
+  gpaRecords GpaRecord[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model Section {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  name      String            @unique
+  users     User[]
+  offerings SubjectOffering[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model Teacher {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String?
+  department String?
+  offerings  SubjectOffering[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model Subject {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  code        String            @unique
+  creditHours Float
+  subjectType SubjectType
+  programId   String            @db.ObjectId
+  semesterId  String            @db.ObjectId
+  program     Program           @relation(fields: [programId], references: [id], onDelete: NoAction)
+  semester    Semester          @relation(fields: [semesterId], references: [id], onDelete: NoAction)
+  offerings   SubjectOffering[]
+  gpaCourses  GpaCourse[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model SubjectOffering {
+  id                    String                @id @default(auto()) @map("_id") @db.ObjectId
+  subjectId             String                @db.ObjectId
+  programId             String                @db.ObjectId
+  semesterId            String                @db.ObjectId
+  sectionId             String                @db.ObjectId
+  teacherId             String                @db.ObjectId
+  academicTerm          String
+  relativeGradePolicyId String?               @db.ObjectId
+  status                OfferingStatus        @default(DRAFT)
+  subject               Subject               @relation(fields: [subjectId], references: [id], onDelete: NoAction)
+  program               Program               @relation(fields: [programId], references: [id], onDelete: NoAction)
+  semester              Semester              @relation(fields: [semesterId], references: [id], onDelete: NoAction)
+  section               Section               @relation(fields: [sectionId], references: [id], onDelete: NoAction)
+  teacher               Teacher               @relation(fields: [teacherId], references: [id], onDelete: NoAction)
+  relativeGradePolicy   RelativeGradePolicy?  @relation(fields: [relativeGradePolicyId], references: [id], onDelete: SetNull)
+  components            AssessmentComponent[]
+  statistics            ClassStatistic[]
+  calculations          StudentCalculation[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@unique([subjectId, sectionId, teacherId, academicTerm])
+}
+
+model AssessmentComponent {
+  id                String                 @id @default(auto()) @map("_id") @db.ObjectId
+  subjectOfferingId String                 @db.ObjectId
+  name              String
+  totalMarks        Float
+  weightage         Float
+  sortOrder         Int                    @default(0)
+  isRequired        Boolean                @default(true)
+  subjectOffering   SubjectOffering        @relation(fields: [subjectOfferingId], references: [id], onDelete: Cascade)
+  statistics        ClassStatistic[]
+  studentMarks      StudentComponentMark[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+}
+
+model ClassStatistic {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  subjectOfferingId  String               @db.ObjectId
+  componentId        String?              @db.ObjectId
+  average            Float
+  standardDeviation  Float
+  totalStudents      Int?
+  minMarks           Float?
+  maxMarks           Float?
+  verificationStatus VerificationStatus   @default(UNVERIFIED)
+  updatedById        String               @db.ObjectId
+  subjectOffering    SubjectOffering      @relation(fields: [subjectOfferingId], references: [id], onDelete: Cascade)
+  component          AssessmentComponent? @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  updatedBy          User                 @relation("StatisticsUpdater", fields: [updatedById], references: [id], onDelete: NoAction)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([subjectOfferingId, componentId])
+}
+
+model RelativeGradePolicy {
+  id          String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String                  @unique
+  description String?
+  boundaries  RelativeGradeBoundary[]
+  offerings   SubjectOffering[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+}
+
+model RelativeGradeBoundary {
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
+  relativeGradePolicyId String              @db.ObjectId
+  grade                 String
+  minZScore             Float
+  gradePoint            Float
+  sortOrder             Int
+  relativeGradePolicy   RelativeGradePolicy @relation(fields: [relativeGradePolicyId], references: [id], onDelete: Cascade)
+
+  @@unique([relativeGradePolicyId, grade])
+}
+
+model StudentCalculation {
+  id                    String                 @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String                 @db.ObjectId
+  subjectOfferingId     String                 @db.ObjectId
+  totalObtained         Float?
+  totalWeighted         Float?
+  percentage            Float?
+  zScore                Float?
+  differenceFromAverage Float?
+  predictedGrade        String?
+  gradePoint            Float?
+  passStatus            String?
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectOffering       SubjectOffering        @relation(fields: [subjectOfferingId], references: [id], onDelete: NoAction)
+  marks                 StudentComponentMark[]
+  gpaCourses            GpaCourse[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+}
+
+model StudentComponentMark {
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  calculationId String              @db.ObjectId
+  componentId   String              @db.ObjectId
+  obtainedMarks Float?
+  weightedMarks Float?
+  calculation   StudentCalculation  @relation(fields: [calculationId], references: [id], onDelete: Cascade)
+  component     AssessmentComponent @relation(fields: [componentId], references: [id], onDelete: NoAction)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([calculationId, componentId])
+}
+
+model GpaRecord {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String      @db.ObjectId
+  semesterId    String      @db.ObjectId
+  semesterGpa   Float
+  cumulativeGpa Float?
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester      Semester    @relation(fields: [semesterId], references: [id], onDelete: NoAction)
+  courses       GpaCourse[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model GpaCourse {
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  gpaRecordId   String              @db.ObjectId
+  subjectId     String?             @db.ObjectId
+  calculationId String?             @db.ObjectId
+  courseName    String
+  creditHours   Float
+  grade         String
+  gradePoint    Float
+  qualityPoints Float
+  gpaRecord     GpaRecord           @relation(fields: [gpaRecordId], references: [id], onDelete: Cascade)
+  subject       Subject?            @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  calculation   StudentCalculation? @relation(fields: [calculationId], references: [id], onDelete: SetNull)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
